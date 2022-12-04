@@ -7,13 +7,13 @@ To create a virtual environment and install the required packages, follow these 
 2. Use the `venv` command to create the virtual environment, specifying the name of the environment (e.g. `myenv`):
 
     ```
-    python -m venv myenv
+    python3 -m venv myenv
     ```
 
 3. Activate the virtual environment by running the `activate` script in the environment's `bin` directory:
 
     ```
-    myenv/bin/activate
+    source myenv/bin/activate
     ```
 
 4. Use the `pip` command to install the required packages from the `requirements.txt` file:
