@@ -1,11 +1,12 @@
 import logging
 from logging import StreamHandler
 import os
+from typing import List
 
 from dotenv import load_dotenv
 from playfab import PlayFabAdminAPI, PlayFabSettings, PlayFabAuthenticationAPI, PlayFabErrors
 
-from playfab_manager.models.player import Player
+from playfab_manager.models.player import Player, TitlePlayerAccount
 
 # Create a Logger instance
 logger = logging.getLogger("PlayFabManager")
@@ -61,4 +62,26 @@ class PlayFabManager:
         if result:
             self.all_players = [Player.parse_obj(player) for player in result["PlayerProfiles"]]
         else:
-            print(error)
+            logger.error(PlayFabErrors.PlayFabError.GenerateErrorReport(error))
+
+    def get_player_title_account_id(self, players: List[Player]):
+        for player in players:
+            PlayFabAdminAPI.GetUserAccountInfo(
+                request={"PlayFabId": player.PlayerId},
+                callback=self._get_player_title_account_id)
+
+    def _get_player_title_account_id(self, result, error):
+        if result:
+            # get the player index
+            player_index = self.all_players.index(Player(PlayerId=result["data"]["UserInfo"]["PlayFabId"]))
+            player_title_id = result["UserInfo"]["TitleInfo"]["TitlePlayerAccount"]["Id"]
+
+            self.all_players[player_index].PlayFabAccountInfo.TitleAccountId = TitlePlayerAccount(Id=player_title_id)
+        else:
+            logger.error(PlayFabErrors.PlayFabError.GenerateErrorReport(error))
+
+    def download_player_file(self, players: List[Player]):
+        self.get_player_title_account_id(players)
+
+
+
