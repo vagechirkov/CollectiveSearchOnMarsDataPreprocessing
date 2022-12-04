@@ -8,7 +8,7 @@ from playfab import PlayFabAdminAPI, PlayFabSettings, PlayFabAuthenticationAPI, 
 from playfab_manager.models.player import Player
 
 # Create a Logger instance
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("PlayFabManager")
 logger.setLevel(logging.INFO)
 
 handler = StreamHandler()
@@ -54,6 +54,8 @@ class PlayFabManager:
         if not segment_id:
             segment_id = os.getenv("SEGMENT_ID")
         PlayFabAdminAPI.GetPlayersInSegment(request={"SegmentID": segment_id}, callback=self._get_all_players)
+        # log info about the players
+        logger.info(f"Found {len(self.all_players)} players")
 
     def _get_all_players(self, result, error):
         if result:
