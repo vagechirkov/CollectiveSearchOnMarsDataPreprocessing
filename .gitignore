@@ -299,3 +299,5 @@ myenv
 
 # Ignore all data folders
 data-*
+# Ignore all animations
+*.gif
