@@ -301,3 +301,4 @@ myenv
 data-*
 # Ignore all animations
 *.gif
+!docs/*.gif
