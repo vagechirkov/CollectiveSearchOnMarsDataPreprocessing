@@ -1,7 +1,34 @@
+import logging
+from logging import StreamHandler
 import os
 
-from playfab import PlayFabAdminAPI, PlayFabSettings, PlayFabAuthenticationAPI, PlayFabErrors
 from dotenv import load_dotenv
+from playfab import PlayFabAdminAPI, PlayFabSettings, PlayFabAuthenticationAPI, PlayFabErrors
+
+from playfab_manager.models.player import Player
+
+# Create a Logger instance
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+handler = StreamHandler()
+handler.setLevel(logging.INFO)
+logger.addHandler(handler)
+
+
+def _check_entity_token_callback(result, error):
+    if result:
+        logger.info("Entity token is valid")
+    else:
+        logger.error(PlayFabErrors.PlayFabError.GenerateErrorReport(error))
+        PlayFabAuthenticationAPI.GetEntityToken(request={}, callback=_get_entity_token_callback)
+
+
+def _get_entity_token_callback(result, error):
+    if result:
+        logger.info("Entity token is created")
+    else:
+        logger.error(PlayFabErrors.PlayFabError.GenerateErrorReport(error))
 
 
 class PlayFabManager:
@@ -15,19 +42,13 @@ class PlayFabManager:
         PlayFabSettings.DeveloperSecretKey = os.getenv("API_KEY")
 
         if PlayFabSettings._internalSettings.EntityToken:
-            PlayFabAuthenticationAPI.ValidateEntityToken({}, self.get_entity_token)
+            PlayFabAuthenticationAPI.ValidateEntityToken(
+                request={'EntityToken': PlayFabSettings._internalSettings.EntityToken},
+                callback=_check_entity_token_callback)
         else:
-            PlayFabAuthenticationAPI.GetEntityToken(request={}, callback=None)
+            PlayFabAuthenticationAPI.GetEntityToken(request={}, callback=_get_entity_token_callback)
 
         self.all_players = None
-
-    @staticmethod
-    def get_entity_token(result, error):
-        if result:
-            print(result)
-        else:
-            print(error)
-            PlayFabAuthenticationAPI.GetEntityToken(request={}, callback=None)
 
     def get_all_players(self, segment_id=None):
         if not segment_id:
@@ -36,8 +57,6 @@ class PlayFabManager:
 
     def _get_all_players(self, result, error):
         if result:
-            self.all_players = result
+            self.all_players = [Player.parse_obj(player) for player in result["PlayerProfiles"]]
         else:
             print(error)
-
-
