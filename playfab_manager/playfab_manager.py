@@ -1,8 +1,11 @@
 import logging
 from logging import StreamHandler
 import os
+import io
 from typing import List
 
+import pandas as pd
+import requests as requests
 from dotenv import load_dotenv
 from playfab import PlayFabAdminAPI, PlayFabSettings, PlayFabAuthenticationAPI, PlayFabErrors, PlayFabDataAPI
 
@@ -89,9 +92,34 @@ class PlayFabManager:
     def _get_player_data_file(self, result, error):
         if result:
             player_index = self._find_player_index(player_title_id=result["Entity"]["Id"])
-            self.all_players[player_index].Traces = [DataFile.parse_obj(data) for filename, data in
-                                                     result["Metadata"].items()]
-            logger.info(f"Found {len(self.all_players[player_index].Traces)} files for player "
+            self.all_players[player_index].DataFiles = [DataFile.parse_obj(data) for filename, data in
+                                                        result["Metadata"].items()]
+            # download the file using the URL
+            for data_file in self.all_players[player_index].DataFiles:
+                data_file.FileContents = requests.get(data_file.DownloadUrl).content.decode("utf-8")
+
+            # sort data chunks by index (the last number)
+            self.all_players[player_index].DataFiles.sort(key=lambda x: int(x.FileName.split("-")[-1]))
+
+            # merge the chunks into one string
+            self.all_players[player_index].TracesRaw = "".join(
+                [data_file.FileContents for data_file in self.all_players[player_index].DataFiles])
+
+            # convert string to the pandas dataframe
+            output = io.StringIO()
+            output.write(self.all_players[player_index].TracesRaw)
+            output.seek(0)
+            df = pd.read_csv(
+                output,
+                sep=" ",
+                header=None,
+                index_col=None,
+            )
+            # set column names
+            df.columns = ["timestamp", "x", "z", "rotation", "signaling"]
+            self.all_players[player_index].TracesPandas = df
+
+            logger.info(f"Found {len(self.all_players[player_index].DataFiles)} files for player "
                         f"{self.all_players[player_index].PlayerId}")
 
         else:

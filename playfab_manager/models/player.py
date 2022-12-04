@@ -1,6 +1,7 @@
 import datetime
 from typing import List, Optional
 
+import pandas as pd
 from pydantic import BaseModel
 
 
@@ -31,4 +32,10 @@ class Player(BaseModel):
     Created: datetime.datetime
     LastLogin: datetime.datetime
     LinkedAccounts: List[PlayFabAccountInfo]
-    Traces: Optional[List[DataFile]]
+    DataFiles: Optional[List[DataFile]]
+    TracesRaw: Optional[str]
+    TracesPandas: Optional[pd.DataFrame]
+
+    # allow arbitrary types in Config
+    class Config:
+        arbitrary_types_allowed = True
