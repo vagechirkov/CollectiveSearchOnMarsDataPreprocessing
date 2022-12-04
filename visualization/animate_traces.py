@@ -1,9 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib.animation import FuncAnimation
 
 
-def animate_traces(traces: np.array, interval=100, save=False, filename='animation.gif'):
+def animate_traces(df: pd.DataFrame, interval=100, save=False, filename='animation.gif'):
+    df.reset_index(inplace=True)
+
     # Create a Figure and Axes objects
     fig, ax = plt.subplots()
 
@@ -11,31 +14,41 @@ def animate_traces(traces: np.array, interval=100, save=False, filename='animati
     ax.set_xlim(-150, 150)
     ax.set_ylim(-150, 150)
 
+    # Remove the axes
+    ax.axis('off')
+
     # set axis equal
     ax.set_aspect('equal')
 
     # Initialize the line and scatter objects to be plotted
-    line, = ax.plot([], [], lw=3, color="b")
-    scatter = ax.scatter([], [], s=100, color="r")
+    player1_line, = ax.plot([], [], color="red")
+    player2_line, = ax.plot([], [], color="green")
+    player3_line, = ax.plot([], [], color="blue")
+    player1_scatter = ax.scatter([], [], s=100, color="red")
+    player2_scatter = ax.scatter([], [], s=100, color="green")
+    player3_scatter = ax.scatter([], [], s=100, color="blue")
 
     # The function to animate the plot
     def animate(i):
         # Set the data for the line and scatter objects
-        line.set_data(traces[0, :i+1], traces[1, :i+1])
-        scatter.set_offsets([traces[0, i], traces[1, i]])
+        player1_line.set_data(df.loc[:i+1, 'pos1'][0], df.loc[:i+1, 'pos1'][1])
+        player2_line.set_data(df.loc[:i+1, 'pos2'][0], df.loc[:i+1, 'pos2'][1])
+        player3_line.set_data(df.loc[:i+1, 'pos3'][0], df.loc[:i+1, 'pos3'][1])
+        player1_scatter.set_offsets(df.loc[i, 'pos1'])
+        player2_scatter.set_offsets(df.loc[i, 'pos2'])
+        player3_scatter.set_offsets(df.loc[i, 'pos3'])
 
         # Set the alpha value of the scatter object to decrease over time
-        scatter.set_alpha(1 - i/traces.shape[1])
-        line.set_alpha(1 - i/traces.shape[1])
+        # player1_scatter.set_alpha(1 - (i / len(df)))
 
         # Return the line and scatter objects to be plotted
-        return line, scatter
+        return player1_line, player2_line, player3_line, player1_scatter, player2_scatter, player3_scatter
 
     # Create an animation using the animate function
     anim = FuncAnimation(
         fig,
         animate,
-        frames=traces.shape[1],
+        frames=df.shape[0],
         interval=interval,
         repeat=True,
         blit=True,
