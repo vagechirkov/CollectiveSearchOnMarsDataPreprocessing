@@ -1,1 +1,2 @@
 playfab
+python-dotenv
