@@ -2,6 +2,8 @@
 
 ![docs/2F3BA89351BC480A_689DD7AEB301A55E_CF40933BA34EDB9_traces.gif](docs/2F3BA89351BC480A_689DD7AEB301A55E_CF40933BA34EDB9_traces.gif)
 
+The corresponding csv file is [here](docs/2F3BA89351BC480A_689DD7AEB301A55E_CF40933BA34EDB9_traces.csv).
+
 ## Virtual Environment
 
 To create a virtual environment and install the required packages, follow these steps:
