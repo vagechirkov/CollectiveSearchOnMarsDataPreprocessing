@@ -4,9 +4,9 @@ import os
 from typing import List
 
 from dotenv import load_dotenv
-from playfab import PlayFabAdminAPI, PlayFabSettings, PlayFabAuthenticationAPI, PlayFabErrors
+from playfab import PlayFabAdminAPI, PlayFabSettings, PlayFabAuthenticationAPI, PlayFabErrors, PlayFabDataAPI
 
-from playfab_manager.models.player import Player, TitlePlayerAccount
+from playfab_manager.models.player import Player, TitlePlayerAccount, DataFile
 
 # Create a Logger instance
 logger = logging.getLogger("PlayFabManager")
@@ -61,27 +61,56 @@ class PlayFabManager:
     def _get_all_players(self, result, error):
         if result:
             self.all_players = [Player.parse_obj(player) for player in result["PlayerProfiles"]]
+
+            # sort players by last login time
+            self.all_players.sort(key=lambda x: x.LastLogin, reverse=True)
         else:
             logger.error(PlayFabErrors.PlayFabError.GenerateErrorReport(error))
 
-    def get_player_title_account_id(self, players: List[Player]):
-        for player in players:
-            PlayFabAdminAPI.GetUserAccountInfo(
-                request={"PlayFabId": player.PlayerId},
-                callback=self._get_player_title_account_id)
+    def get_player_title_account_id(self, playfab_player_id: str):
+        PlayFabAdminAPI.GetUserAccountInfo(
+            request={"PlayFabId": playfab_player_id},
+            callback=self._get_player_title_account_id)
 
     def _get_player_title_account_id(self, result, error):
         if result:
             # get the player index
-            player_index = self.all_players.index(Player(PlayerId=result["data"]["UserInfo"]["PlayFabId"]))
+            player_index = self._find_player_index(player_id=result["UserInfo"]["PlayFabId"])
             player_title_id = result["UserInfo"]["TitleInfo"]["TitlePlayerAccount"]["Id"]
-
-            self.all_players[player_index].PlayFabAccountInfo.TitleAccountId = TitlePlayerAccount(Id=player_title_id)
+            self.all_players[player_index].LinkedAccounts[0].TitlePlayerAccount = TitlePlayerAccount(Id=player_title_id)
         else:
             logger.error(PlayFabErrors.PlayFabError.GenerateErrorReport(error))
 
-    def download_player_file(self, players: List[Player]):
-        self.get_player_title_account_id(players)
+    def get_player_data_file(self, playfab_player_title_id: str):
+        PlayFabDataAPI.GetFiles(
+            request={"Entity": {"Id": playfab_player_title_id, "Type": "title_player_account"}},
+            callback=self._get_player_data_file)
 
+    def _get_player_data_file(self, result, error):
+        if result:
+            player_index = self._find_player_index(player_title_id=result["Entity"]["Id"])
+            self.all_players[player_index].Traces = [DataFile.parse_obj(data) for filename, data in
+                                                     result["Metadata"].items()]
+            logger.info(f"Found {len(self.all_players[player_index].Traces)} files for player "
+                        f"{self.all_players[player_index].PlayerId}")
 
+        else:
+            logger.error(PlayFabErrors.PlayFabError.GenerateErrorReport(error))
 
+    def download_player_files(self, playfab_player_ids: List[str]):
+        for i in playfab_player_ids:
+            player_index = self._find_player_index(player_id=i)
+
+            self.get_player_title_account_id(i)
+
+            player_title_id = self.all_players[player_index].LinkedAccounts[0].TitlePlayerAccount.Id
+
+            self.get_player_data_file(player_title_id)
+
+    def _find_player_index(self, player_id: str = None, player_title_id: str = None):
+        if player_id:
+            return self.all_players.index([p for p in self.all_players if p.PlayerId == player_id][0])
+        elif player_title_id:
+            return self.all_players.index(
+                [i for i in self.all_players if
+                 i.LinkedAccounts and i.LinkedAccounts[0].TitlePlayerAccount.Id == player_title_id][0])

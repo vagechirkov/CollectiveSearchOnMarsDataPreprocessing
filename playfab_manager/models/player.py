@@ -15,7 +15,13 @@ class PlayFabAccountInfo(BaseModel):
     Platform: str
     PlatformUserId: str
     Username: str
-    TitlePlayerAccount: Optional[TitlePlayerAccount]
+    TitlePlayerAccount: TitlePlayerAccount = TitlePlayerAccount(Id="")
+
+
+class DataFile(BaseModel):
+    FileName: str
+    DownloadUrl: str
+    FileContents: Optional[str]
 
 
 class Player(BaseModel):
@@ -25,4 +31,4 @@ class Player(BaseModel):
     Created: datetime.datetime
     LastLogin: datetime.datetime
     LinkedAccounts: List[PlayFabAccountInfo]
-    Traces: Optional[List[str]]
+    Traces: Optional[List[DataFile]]
