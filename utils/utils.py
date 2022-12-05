@@ -10,7 +10,7 @@ def merge_traces_dataframes(dfs: List[pd.DataFrame], resource: pd.DataFrame) -> 
     resource['time'] = round(resource["timestamp"] / 1000, 1)
     resource.columns = [f"{col}_resource" if col != "time" else col for col in resource.columns]
 
-    for i, df in enumerate(dfs):
+    for i, df in enumerate(dfs, start=1):
         # round to the nearest 100ms
         df['time'] = round(df["timestamp"] / 1000, 1)
 

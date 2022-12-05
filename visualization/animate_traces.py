@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib.animation import FuncAnimation
 
 
-def animate_traces(df: pd.DataFrame, interval=100, save=False, filename='animation.gif'):
+def animate_traces(df: pd.DataFrame, n_players, interval=100, save=False, filename='animation.gif'):
     df.reset_index(inplace=True)
 
     # Create a Figure and Axes objects
@@ -21,36 +21,40 @@ def animate_traces(df: pd.DataFrame, interval=100, save=False, filename='animati
     ax.set_aspect('equal')
 
     # Initialize the line and scatter objects to be plotted
-    player1_line, = ax.plot([], [], color="red")
-    player2_line, = ax.plot([], [], color="green")
-    player3_line, = ax.plot([], [], color="blue")
-    player1_scatter = ax.scatter([], [], s=100, color="red", edgecolor="k")
-    player2_scatter = ax.scatter([], [], s=100, color="green", edgecolor="k")
-    player3_scatter = ax.scatter([], [], s=100, color="blue", edgecolor="k")
+    lines, scatters = [], []
+    for i in range(n_players + 1):
+        # generate random color
+        color = np.random.rand(3, )
+        # resource
+        if i == 0:
+            color = 'black'
+
+        line, = ax.plot([], [], color=color)
+        lines.append(line)
+
+        scatter = ax.scatter([], [], s=100, color=color, edgecolor="k")
+        scatters.append(scatter)
 
     # The function to animate the plot
     def animate(i):
-        # Set the data for the line and scatter objects
-        player1_line.set_data([i[0] for i in df.loc[:i+1, 'pos1']],
-                              [i[1] for i in df.loc[:i+1, 'pos1']])
-        player2_line.set_data([i[0] for i in df.loc[:i+1, 'pos2']],
-                              [i[1] for i in df.loc[:i+1, 'pos2']])
-        player3_line.set_data([i[0] for i in df.loc[:i+1, 'pos3']],
-                              [i[1] for i in df.loc[:i+1, 'pos3']])
-        player1_scatter.set_offsets(df.loc[i, 'pos1'])
-        player2_scatter.set_offsets(df.loc[i, 'pos2'])
-        player3_scatter.set_offsets(df.loc[i, 'pos3'])
+        for j in range(n_players + 1):
+            # resource
+            if j == 0:
+                x = 'x_resource'
+                z = 'z_resource'
+            else:
+                x = f'x_{j}'
+                z = f'z_{j}'
 
-        # Set the alpha value of the scatter object to decrease over time
-        player1_line.set_alpha(0.5)
-        player2_line.set_alpha(0.5)
-        player3_line.set_alpha(0.5)
-        player1_scatter.set_alpha(0.7)
-        player2_scatter.set_alpha(0.7)
-        player3_scatter.set_alpha(0.7)
+            lines[j].set_data(df.loc[:i, x], df.loc[:i, z])
+            scatters[j].set_offsets(df.loc[i, [x, z]])
+
+            # set alpha
+            lines[j].set_alpha(0.5)
+            scatters[j].set_alpha(0.7)
 
         # Return the line and scatter objects to be plotted
-        return player1_line, player2_line, player3_line, player1_scatter, player2_scatter, player3_scatter
+        return lines + scatters
 
     # Create an animation using the animate function
     anim = FuncAnimation(
