@@ -1,8 +1,8 @@
-## Example Trace Plot
+## Example Trace Plot (time is 3x faster than real time)
 
-![docs/2F3BA89351BC480A_689DD7AEB301A55E_CF40933BA34EDB9_traces.gif](docs/2F3BA89351BC480A_689DD7AEB301A55E_CF40933BA34EDB9_traces.gif)
+![Example Trace Plot](docs/fast_e210f5fb3b144b9e9044ea524ea0f75a_traces.gif)
 
-The corresponding csv file is [here](docs/2F3BA89351BC480A_689DD7AEB301A55E_CF40933BA34EDB9_traces.csv).
+The corresponding csv file is [here](docs/e210f5fb3b144b9e9044ea524ea0f75a_traces.csv).
 
 ## Virtual Environment
 
@@ -29,3 +29,12 @@ To create a virtual environment and install the required packages, follow these 
     ```
 
 5. When you are finished working with the virtual environment, deactivate it by running the `deactivate` command.
+
+
+## .env File
+
+```dotenv
+API_KEY=<PlayFab API key>
+TITLE_ID=<PlayFab title ID>
+SEGMENT_ID=<PlayFab segment ID>
+```
