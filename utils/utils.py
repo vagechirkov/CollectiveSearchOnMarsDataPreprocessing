@@ -8,14 +8,14 @@ def merge_traces_dataframes(dfs: List[pd.DataFrame], resource: pd.DataFrame) -> 
 
     # resource data
     resource['time'] = round(resource["timestamp"] / 1000, 1)
-    resource.columns = [f"{col}_resource" for col in resource.columns if col != "time"]
+    resource.columns = [f"{col}_resource" if col != "time" else col for col in resource.columns]
 
     for i, df in enumerate(dfs):
         # round to the nearest 100ms
         df['time'] = round(df["timestamp"] / 1000, 1)
 
         # add index `i` to all columns
-        df.columns = [f"{col}_{i}" for col in df.columns if col != "time"]
+        df.columns = [f"{col}_{i}" if col != "time" else col for col in df.columns ]
 
     # merge all dataframes
     df_all = resource
