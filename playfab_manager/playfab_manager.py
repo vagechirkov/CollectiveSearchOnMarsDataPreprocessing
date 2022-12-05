@@ -98,8 +98,22 @@ class PlayFabManager:
             for data_file in self.all_players[player_index].DataFiles:
                 data_file.FileContents = requests.get(data_file.DownloadUrl).content.decode("utf-8")
 
+            for data_file in self.all_players[player_index].DataFiles:
+                # server ID is the second part of the filename
+                data_file.ServerID = data_file.FileName.split("-")[1]
+
+                # chunk number is the last part of the filename
+                data_file.ChunkNumber = data_file.FileName.split("-")[-1]
+
+            # Set server ID to the player
+            self.all_players[player_index].ServerID = self.all_players[player_index].DataFiles[0].ServerID
+
+            # Check if the player is a resource
+            if self.all_players[player_index].DisplayName == self.all_players[player_index].ServerID[:20]:
+                self.all_players[player_index].IsResource = True
+
             # sort data chunks by index (the last number)
-            self.all_players[player_index].DataFiles.sort(key=lambda x: int(x.FileName.split("-")[-1]))
+            self.all_players[player_index].DataFiles.sort(key=lambda x: x.ChunkNumber)
 
             # merge the chunks into one string
             self.all_players[player_index].TracesRaw = "".join(
@@ -116,7 +130,7 @@ class PlayFabManager:
                 index_col=None,
             )
             # set column names
-            df.columns = ["timestamp", "x", "z", "rotation", "signaling"]
+            df.columns = ["timestamp", "x", "z", "rotation", "signaling", "score"]
             self.all_players[player_index].TracesPandas = df
 
             logger.info(f"Found {len(self.all_players[player_index].DataFiles)} files for player "

@@ -22,6 +22,8 @@ class PlayFabAccountInfo(BaseModel):
 class DataFile(BaseModel):
     FileName: str
     DownloadUrl: str
+    ServerID: Optional[str]
+    ChunkNumber: Optional[int]
     FileContents: Optional[str]
 
 
@@ -33,6 +35,8 @@ class Player(BaseModel):
     LastLogin: datetime.datetime
     LinkedAccounts: List[PlayFabAccountInfo]
     DataFiles: Optional[List[DataFile]]
+    ServerID: Optional[str]
+    IsResource: Optional[bool]
     TracesRaw: Optional[str]
     TracesPandas: Optional[pd.DataFrame]
 
