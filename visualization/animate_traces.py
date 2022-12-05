@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib.animation import FuncAnimation
 
 
-def animate_traces(df: pd.DataFrame, n_players, interval=100, save=False, filename='animation.gif'):
+def animate_traces(df: pd.DataFrame, n_players, interval=100, save=False, filename='animation.gif', fps=10):
     df.reset_index(inplace=True)
 
     # Create a Figure and Axes objects
@@ -68,7 +68,7 @@ def animate_traces(df: pd.DataFrame, n_players, interval=100, save=False, filena
 
     if save:
         # Save the animation as a gif
-        anim.save(filename, writer="imagemagick", fps=10)
+        anim.save(filename, writer="imagemagick", fps=fps)
         plt.close()
     else:
         # Show the animation
