@@ -109,7 +109,8 @@ class PlayFabManager:
             self.all_players[player_index].ServerID = self.all_players[player_index].DataFiles[0].ServerID
 
             # Check if the player is a resource
-            if self.all_players[player_index].DisplayName == self.all_players[player_index].ServerID[:20]:
+            username = self.all_players[player_index].LinkedAccounts[0].Username
+            if username == self.all_players[player_index].ServerID[:20]:
                 self.all_players[player_index].IsResource = True
 
             # sort data chunks by index (the last number)

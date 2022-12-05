@@ -36,7 +36,7 @@ class Player(BaseModel):
     LinkedAccounts: List[PlayFabAccountInfo]
     DataFiles: Optional[List[DataFile]]
     ServerID: Optional[str]
-    IsResource: Optional[bool]
+    IsResource: Optional[bool] = False
     TracesRaw: Optional[str]
     TracesPandas: Optional[pd.DataFrame]
 
