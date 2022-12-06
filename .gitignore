@@ -301,4 +301,6 @@ myenv
 data-*
 # Ignore all animations
 *.gif
+*.csv
 !docs/*.gif
+!docs/*.csv
